@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { PhotoService } from '../photo.service';
 
 @Component({
   selector: 'app-tab4',
@@ -7,7 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class Tab4Page implements OnInit {
 
-  constructor() { }
+  url : string
+  constructor(
+    public photoService:PhotoService
+  ) { 
+    this.url = photoService.fotoActive 
+  }
 
   ngOnInit() {
   }

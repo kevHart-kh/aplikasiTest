@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/storage';
+import { Router } from '@angular/router';
 import { PhotoService } from '../photo.service';
+// import { Varglob } from "../photo.service";
 
 export interface fileFoto {
 	name: String,
@@ -15,11 +17,14 @@ export interface fileFoto {
 
 export class Tab3Page {
 
+	status = "Loading . . . ."
 	urlImageStorage: string[] = [];
 
 	constructor(
 		private afStorage: AngularFireStorage,
-		public photoService: PhotoService) {
+		public photoService: PhotoService,
+		// public varGlob : Varglob,
+		public router: Router) {
 
 	}
 
@@ -32,47 +37,26 @@ export class Tab3Page {
 		this.tampilkanData();
 	}
 
-
-	hapusFoto() {
-		// var refImage = this.afStorage.storage.ref('imgStorage');
-		// refImage.listAll().then((res) => {
-		// 	res.items.forEach((itemRef) => {
-		// 		itemRef.delete().then(() => {
-		// 		this.tampilkanData();
-		// 		});
-		// 	});
-		// });
-	}
-
-	uploadFoto() {
-		console.log(this.photoService.dataFoto[index].filePath);
-		return;
-
-		this.urlImageStorage = [];
-		for (var index in this.photoService.dataFoto) {
-			const imgFilepath = `imgStorage/${this.photoService.dataFoto[index].filePath}`;
-
-			this.afStorage.upload(imgFilepath, this.photoService.dataFoto[index].dataImage).then(() => {
-				this.afStorage.storage.ref().child(imgFilepath).getDownloadURL().then((url) => {
-				this.urlImageStorage.unshift(url)
-				});
-			});
-		}
-	}
-
 	tampilkanData() {
-		// this.urlImageStorage = [];
-		// var refImage = this.afStorage.storage.ref('imgStorage');
-		// refImage.listAll()
-		// .then((res) => {
-		// 	res.items.forEach((itemRef) => {
-		// 	itemRef.getDownloadURL().then(url => {
-		// 		this.urlImageStorage.unshift(url);
-		// 	})
-		// 	});
-		// }).catch((error) => {
-		// 	console.log(error);
-		// })
+		this.urlImageStorage = [];
+		var refImage = this.afStorage.storage.ref('imgStorage');
+		refImage.listAll()
+		.then((res) => {
+			status = ""
+			res.items.forEach((itemRef) => {
+				itemRef.getDownloadURL().then(url => {
+					this.urlImageStorage.unshift(url);
+				})
+			});
+		}).catch((error) => {
+			console.log(error);
+		})
+	}
+
+	bukaFoto(url){
+		this.photoService.fotoActive = url
+		this.router.navigateByUrl('/tab4')
+
 	}
 
 

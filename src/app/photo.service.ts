@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { CameraPhoto, CameraResultType, CameraSource, FilesystemDirectory, Plugins } from "@capacitor/core";
+import { CameraPhoto, CameraResultType, CameraSource, Capacitor, FilesystemDirectory, Plugins } from "@capacitor/core";
+import { Platform } from '@ionic/angular';
 
 const { Camera, Filesystem, Storage } = Plugins;
 
@@ -8,11 +9,17 @@ const { Camera, Filesystem, Storage } = Plugins;
 })
 export class PhotoService {
 
-  public dataFoto: Photo[] = []
-  private keyFoto: string = "foto"
+  public fotoActive: string
 
 
-  constructor() { }
+  public dataFoto: Photo[] = [];
+  private keyFoto: string = "foto";
+  private platform: Platform;
+
+
+  constructor(platform: Platform) {
+    this.platform = platform;
+  }
 
   public async tambahFoto() {
     const Foto = await Camera.getPhoto({
@@ -20,47 +27,65 @@ export class PhotoService {
       source: CameraSource.Camera,
       quality: 100
     });
-    // console.log(Foto);
+    console.log(Foto);
 
-    const fileFoto = await this.simpanFoto(Foto);
+    const fileFoto = await this.simpanFoto(Foto)
     this.dataFoto.unshift(fileFoto);
 
     Storage.set({
       key: this.keyFoto,
       value: JSON.stringify(this.dataFoto)
-    });
-
-
+    })
   }
 
   public async simpanFoto(foto: CameraPhoto) {
-    const base64data = await this.readAsBase64(foto);
+    const base64Data = await this.readAsBase64(foto);
 
-    const namaFile = new Date().getTime + '.jpeg';
+    const namaFile = new Date().getTime() + '.jpeg';
+
     const simpanFile = await Filesystem.writeFile({
       path: namaFile,
-      data: base64data,
+      data: base64Data,
       directory: FilesystemDirectory.Data
-    });
+    });;
 
     const response = await fetch(foto.webPath);
     const blob = await response.blob();
-    const dataFoto = new File([blob], foto.path,{
-      type:"image/jpeg"
+    const dataFoto = new File([blob], foto.path, {
+      type: 'image/jpg'
     })
 
-    return {
-      filePath: namaFile,
-      webViewPath: foto.webPath,
-      dataImage: dataFoto
+    if (this.platform.is('hybrid')) {
+      return {
+        filePath: simpanFile.uri,
+        webViewPath: Capacitor.convertFileSrc(simpanFile.uri),
+        dataImage: dataFoto
+      }
     }
+    else {
+      return {
+        filePath: namaFile,
+        webViewPath: foto.webPath,
+        dataImage: dataFoto
+      }
+    }
+
   }
 
   private async readAsBase64(foto: CameraPhoto) {
-    const response = await fetch(foto.webPath);
-    const blob = await response.blob();
+    if (this.platform.is('hybrid')) {
+      const file = await Filesystem.readFile({
+        path: foto.path
+      });
+      return file.data
+    }
+    else {
+      const response = await fetch(foto.webPath);
+      const blob = await response.blob();
 
-    return await this.convertBlobToBase64(blob) as string;
+      return await this.convertBlobToBase64(blob) as string;
+    }
+
   }
 
   convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
@@ -74,15 +99,25 @@ export class PhotoService {
 
   public async loadFoto() {
     const listFoto = await Storage.get({ key: this.keyFoto });
-    this.dataFoto = JSON.parse(listFoto.value) || []
+    this.dataFoto = JSON.parse(listFoto.value) || [];
 
-    for (let foto of this.dataFoto) {
-      const readFile = await Filesystem.readFile({
-        path: foto.filePath,
-        directory: FilesystemDirectory.Data
-      });
-      foto.webViewPath = `data:image/jpeg;base64,${readFile.data}`
+    if (!this.platform.is('hybrid')) {
+      for (let foto of this.dataFoto) {
+        const readFile = await Filesystem.readFile({
+          path: foto.filePath,
+          directory: FilesystemDirectory.Data
+        });
+        foto.webViewPath = `data:image/jpeg;base64, ${readFile.data}`;
+
+        const response = await fetch(foto.webViewPath);
+        const blob = await response.blob();
+
+        foto.dataImage = new File([blob], foto.filePath, {
+          type: "image/jpeg"
+        });
+      }
     }
+
     console.log(this.dataFoto);
   }
 }
@@ -92,3 +127,7 @@ export interface Photo {
   webViewPath: string;
   dataImage : File;
 }
+
+// export class Varglob {
+
+// }
