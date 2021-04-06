@@ -19,7 +19,6 @@ export class Tab3Page {
 
 	status = "Loading . . . ."
 	urlImageStorage: string[] = [];
-	nameImageStorage: string[] = [];
 
 	constructor(
 		private afStorage: AngularFireStorage,
@@ -48,17 +47,14 @@ export class Tab3Page {
 				itemRef.getDownloadURL().then(url => {
 					this.urlImageStorage.unshift(url);
 				})
-				this.nameImageStorage.unshift(itemRef.name);
 			});
 		}).catch((error) => {
 			console.log(error);
 		})
 	}
 
-	bukaFoto(index){
-		// alert(index)
-		this.photoService.fotoActiveUrl = this.urlImageStorage[index]
-		this.photoService.fotoActiveName = this.nameImageStorage[index]
+	bukaFoto(url){
+		this.photoService.fotoActive = url
 		this.router.navigateByUrl('/tab4')
 
 	}

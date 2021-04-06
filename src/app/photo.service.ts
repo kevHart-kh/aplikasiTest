@@ -9,8 +9,7 @@ const { Camera, Filesystem, Storage } = Plugins;
 })
 export class PhotoService {
 
-  public fotoActiveUrl: string
-  public fotoActiveName: string
+  public fotoActive: string
 
 
   public dataFoto: Photo[] = [];

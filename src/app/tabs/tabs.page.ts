@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { PhotoService } from '../photo.service';
 
 @Component({
   selector: 'app-tabs',
@@ -8,13 +7,6 @@ import { PhotoService } from '../photo.service';
 })
 export class TabsPage {
 
-  constructor(
-    public photoService: PhotoService,
-  ) {}
-
-  clearFoto(){
-    this.photoService.fotoActiveUrl = ""
-    this.photoService.fotoActiveName = "Tidak ada foto yang dilihat"
-  }
+  constructor() {}
 
 }
