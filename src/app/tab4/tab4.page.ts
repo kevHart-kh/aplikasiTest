@@ -9,10 +9,13 @@ import { PhotoService } from '../photo.service';
 export class Tab4Page implements OnInit {
 
   url : string
+  name : string
+
   constructor(
     public photoService:PhotoService
   ) { 
-    this.url = photoService.fotoActive 
+    this.url = photoService.fotoActiveUrl
+    this.name = photoService.fotoActiveName
   }
 
   ngOnInit() {
